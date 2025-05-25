@@ -16,7 +16,14 @@ It’s like a time machine for your dev setup.
 - 🔍 View a snapshot before restoring it
 - 🧾 List all saved snapshots
 - ✅ Restore environment variables from a snapshot
-  
+
+## Installation
+```bash
+git clone https://github.com/your-username/envsnap.git
+cd envsnap
+pip install .
+```
+
 
 ## 🚀 Usage
 
