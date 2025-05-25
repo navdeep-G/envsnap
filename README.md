@@ -51,7 +51,7 @@ If this is your first time using `envsnap`, run the following to enable autocomp
 source ~/.envsnap_completion.bash
 ```
 
-🔁 This enables snapshot name autocompletion in your current shell session.
+This enables snapshot name autocompletion in your current shell session.
 It will load automatically in new terminals going forward.
 
 ## Restore environment variables
