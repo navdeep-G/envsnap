@@ -4,7 +4,6 @@
 
 It’s like a time machine for your dev setup.
 
----
 
 ## 🔧 Features
 
@@ -17,8 +16,7 @@ It’s like a time machine for your dev setup.
 - 🔍 View a snapshot before restoring it
 - 🧾 List all saved snapshots
 - ✅ Restore environment variables from a snapshot
-
----
+  
 
 ## 🚀 Usage
 
