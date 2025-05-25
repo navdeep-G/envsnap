@@ -39,6 +39,21 @@ envsnap save my-project-setup
 envsnap view my-project-setup
 ```
 
+You can also use tab-completion to list available snapshots:
+
+```bash
+envsnap view <TAB>
+```
+
+If this is your first time using `envsnap`, run the following to enable autocompletion:
+
+```bash
+source ~/.envsnap_completion.bash
+```
+
+🔁 This enables snapshot name autocompletion in your current shell session.
+It will load automatically in new terminals going forward.
+
 ## Restore environment variables
 
 ```bash
