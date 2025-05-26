@@ -1,21 +1,21 @@
-# 🧠 EnvSnap – Terminal-Based Environment Snapshot Tool
+# EnvSnap – Terminal-Based Environment Snapshot Tool
 
 **EnvSnap** is a simple Python CLI tool for capturing, viewing, and restoring your local development environment — including Python version, virtual environment, installed packages, Git branch, and selected environment variables.
 
 It’s like a time machine for your dev setup.
 
 
-## 🔧 Features
+## Features
 
-- 📸 Save a snapshot of:
+- Save a snapshot of:
   - Python version
   - Virtual environment
   - Installed packages (`pip freeze`)
   - Current Git branch
   - Key environment variables (`PATH`, `DEBUG`, `API_KEY`, `SECRET_KEY`)
-- 🔍 View a snapshot before restoring it
-- 🧾 List all saved snapshots
-- ✅ Restore environment variables from a snapshot
+- View a snapshot before restoring it
+- List all saved snapshots
+- Restore environment variables from a snapshot
 
 ## Installation
 ```bash
@@ -25,7 +25,7 @@ pip install .
 ```
 
 
-## 🚀 Usage
+## Usage
 
 ## Save a snapshot
 
@@ -66,7 +66,7 @@ source <(envsnap restore my-project-setup --env-vars)
 envsnap list
 ```
 
-# 📂 Snapshot Storage
+# Snapshot Storage
 
 Snapshots are saved as `.json` files in:
 
@@ -76,7 +76,7 @@ Snapshots are saved as `.json` files in:
 
 Each file contains environment metadata under the name you give it.
 
-# 🤖 What It Captures
+# What It Captures
 
 * Python version (e.g., `3.11.2`)
 * Virtual environment path
@@ -84,17 +84,17 @@ Each file contains environment metadata under the name you give it.
 * Current Git branch
 * Key environment variables
 
-# 🔐 Security Note
+# Security Note
 
 Environment variables may include sensitive values like API keys or tokens. Use caution when sharing snapshot files.
 
-# 🛣 Roadmap Ideas
+# Roadmap Ideas
 
 * Auto-restore pip packages
 * Snapshot comparison (`diff`)
 * Docker/container info capture
 * Export to `.env` or Markdown
 
-# 📄 License
+# License
 
 Licensed under the Apache License, Version 2.0.
