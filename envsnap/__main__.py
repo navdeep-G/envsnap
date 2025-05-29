@@ -6,7 +6,7 @@ import json
 import argparse
 import subprocess
 from datetime import datetime
-from difflib import get_close_matches
+from difflib import get_close_matches, unified_diff
 
 SNAPSHOT_DIR = os.path.expanduser("~/.envsnap")
 os.makedirs(SNAPSHOT_DIR, exist_ok=True)
@@ -15,6 +15,7 @@ BASH_COMPLETION_SCRIPT = os.path.expanduser("~/.envsnap_completion.bash")
 
 COMMANDS_REQUIRING_SNAPSHOT = ["view", "restore"]
 
+
 def write_bash_completion_script():
     script_content = f"""#!/bin/bash
 _envsnap_complete() {{
@@ -22,7 +23,7 @@ _envsnap_complete() {{
     curr_arg="${{COMP_WORDS[COMP_CWORD]}}"
     prev_arg="${{COMP_WORDS[COMP_CWORD-1]}}"
 
-    if [[ "$prev_arg" == "view" || "$prev_arg" == "restore" ]]; then
+    if [[ "$prev_arg" == "view" || "$prev_arg" == "restore" || "$prev_arg" == "diff" ]]; then
         local snapshots=$(cd {SNAPSHOT_DIR} 2>/dev/null && ls *.json | sed 's/\\.json$//')
         COMPREPLY=($(compgen -W "$snapshots" -- "$curr_arg"))
     fi
@@ -30,7 +31,6 @@ _envsnap_complete() {{
 
 complete -o default -F _envsnap_complete envsnap
 """
-
     with open(BASH_COMPLETION_SCRIPT, "w") as f:
         f.write(script_content)
     os.chmod(BASH_COMPLETION_SCRIPT, 0o755)
@@ -51,8 +51,8 @@ complete -o default -F _envsnap_complete envsnap
     append_source_line("~/.bash_profile")
 
     print("✅ Bash autocompletion installed.")
-    print("🔁 To activate it now, run: source ~/.envsnap_completion.bash")
-    print("🚀 It will also load automatically in new terminals.")
+    print("👉 Restart your terminal or run: source ~/.bash_profile")
+
 
 def snapshot_file(name):
     return os.path.join(SNAPSHOT_DIR, f"{name}.json")
@@ -67,10 +67,17 @@ def resolve_snapshot_name(name):
     return matches[0] if matches else name
 
 
-def get_env_vars():
-    keys = ["PATH", "DEBUG", "API_KEY", "SECRET_KEY"]
-    return {key: os.environ.get(key, "") for key in keys}
+def load_snapshot(name):
+    path = snapshot_file(name)
+    if not os.path.exists(path):
+        print(f"❌ Snapshot '{name}' not found.")
+        sys.exit(1)
+    with open(path) as f:
+        return json.load(f)
 
+
+def get_env_vars():
+    return dict(os.environ)
 
 def get_python_version():
     return sys.version.split("\n")[0]
@@ -154,10 +161,44 @@ def view_snapshot(name):
             print("   ... (truncated)")
 
 
+def compare_snapshots(name1, name2):
+    snap1 = load_snapshot(resolve_snapshot_name(name1))
+    snap2 = load_snapshot(resolve_snapshot_name(name2))
+
+    def flatten_snapshot(data):
+        flattened = {}
+        for key, value in data.items():
+            if key == "packages":
+                flattened.update({f"package:{pkg}": "installed" for pkg in value})
+            elif isinstance(value, dict):
+                flattened.update({f"{key}:{k}": v for k, v in value.items()})
+            else:
+                flattened[key] = value
+        return flattened
+
+    flat1 = flatten_snapshot(snap1)
+    flat2 = flatten_snapshot(snap2)
+
+    all_keys = sorted(set(flat1.keys()) | set(flat2.keys()))
+
+    print(f"\n🔍 Comparing snapshots '{name1}' vs '{name2}':\n")
+    differences_found = False
+    for key in all_keys:
+        val1 = flat1.get(key, "<missing>")
+        val2 = flat2.get(key, "<missing>")
+        if val1 != val2:
+            differences_found = True
+            print(f"🔸 {key}\n   - {name1}: {val1}\n   - {name2}: {val2}\n")
+
+    if not differences_found:
+        print("✅ No differences found.")
+
+
 def main():
     if len(sys.argv) == 2 and sys.argv[1] == "--setup-completion":
         write_bash_completion_script()
         return
+
     parser = argparse.ArgumentParser(description="EnvSnap – Save and restore dev environments")
     subparsers = parser.add_subparsers(dest="command")
 
@@ -173,6 +214,10 @@ def main():
     view_cmd = subparsers.add_parser("view")
     view_cmd.add_argument("name", help="Snapshot name to view")
 
+    diff_cmd = subparsers.add_parser("diff")
+    diff_cmd.add_argument("snap1", help="First snapshot name")
+    diff_cmd.add_argument("snap2", help="Second snapshot name")
+
     args = parser.parse_args()
 
     if args.command == "save":
@@ -186,11 +231,11 @@ def main():
             print("⚠️ Add --env-vars to restore environment variables")
     elif args.command == "view":
         view_snapshot(args.name)
+    elif args.command == "diff":
+        compare_snapshots(args.snap1, args.snap2)
     else:
         parser.print_help()
-    if not os.path.exists(BASH_COMPLETION_SCRIPT):
-        write_bash_completion_script()
+
 
 if __name__ == "__main__":
     main()
-
