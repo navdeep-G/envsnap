@@ -1,5 +1,3 @@
-# __main__.py – Entry point for envsnap CLI tool with automatic setup and autocompletion
-
 import os
 import sys
 import json

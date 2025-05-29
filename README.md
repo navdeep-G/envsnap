@@ -1,6 +1,6 @@
 # EnvSnap – Terminal-Based Environment Snapshot Tool
 
-**EnvSnap** is a simple Python CLI tool for capturing, viewing, and restoring your local development environment — including Python version, virtual environment, installed packages, Git branch, and selected environment variables.
+**EnvSnap** is a simple Python CLI tool for capturing, viewing, and restoring your local development environment, including Python version, virtual environment, installed packages, Git branch, and selected environment variables.
 
 It’s like a time machine for your dev setup.
 
