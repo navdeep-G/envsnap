@@ -1,3 +1,5 @@
+# __main__.py – Entry point for envsnap CLI tool with automatic setup and autocompletion
+
 import os
 import sys
 import json
@@ -21,7 +23,7 @@ _envsnap_complete() {{
     curr_arg="${{COMP_WORDS[COMP_CWORD]}}"
     prev_arg="${{COMP_WORDS[COMP_CWORD-1]}}"
 
-    if [[ "$prev_arg" == "view" || "$prev_arg" == "restore" || "$prev_arg" == "diff" ]]; then
+    if [[ "$prev_arg" == "view" || "$prev_arg" == "restore" || "$prev_arg" == "diff" || "$prev_arg" == "report" ]]; then
         local snapshots=$(cd {SNAPSHOT_DIR} 2>/dev/null && ls *.json | sed 's/\\.json$//')
         COMPREPLY=($(compgen -W "$snapshots" -- "$curr_arg"))
     fi
@@ -76,6 +78,7 @@ def load_snapshot(name):
 
 def get_env_vars():
     return dict(os.environ)
+
 
 def get_python_version():
     return sys.version.split("\n")[0]
@@ -192,6 +195,23 @@ def compare_snapshots(name1, name2):
         print("✅ No differences found.")
 
 
+def report_snapshot(name):
+    data = load_snapshot(resolve_snapshot_name(name))
+    print(f"\n📋 Summary Report for '{name}'")
+    print("----------------------------")
+    print(f"📅 Timestamp       : {data.get('timestamp')}")
+    print(f"🐍 Python Version  : {data.get('python_version')}")
+    print(f"🌿 Git Branch      : {data.get('git_branch')}")
+    print(f"📁 Virtualenv Path : {data.get('virtualenv')}")
+    print(f"🔑 Env Vars Count  : {len(data.get('env_vars', {}))}")
+    print(f"📦 Package Count   : {len(data.get('packages', []))}")
+    print("📦 Top Packages    :")
+    for pkg in data.get('packages', [])[:10]:
+        print(f"   - {pkg}")
+    if len(data.get('packages', [])) > 10:
+        print("   ... (truncated)")
+
+
 def main():
     if len(sys.argv) == 2 and sys.argv[1] == "--setup-completion":
         write_bash_completion_script()
@@ -216,6 +236,9 @@ def main():
     diff_cmd.add_argument("snap1", help="First snapshot name")
     diff_cmd.add_argument("snap2", help="Second snapshot name")
 
+    report_cmd = subparsers.add_parser("report")
+    report_cmd.add_argument("name", help="Snapshot name to summarize")
+
     args = parser.parse_args()
 
     if args.command == "save":
@@ -231,9 +254,12 @@ def main():
         view_snapshot(args.name)
     elif args.command == "diff":
         compare_snapshots(args.snap1, args.snap2)
+    elif args.command == "report":
+        report_snapshot(args.name)
     else:
         parser.print_help()
 
 
 if __name__ == "__main__":
     main()
+
