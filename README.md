@@ -91,7 +91,6 @@ Environment variables may include sensitive values like API keys or tokens. Use 
 # Roadmap Ideas
 
 * Auto-restore pip packages
-* Snapshot comparison (`diff`)
 * Docker/container info capture
 * Export to `.env` or Markdown
 
