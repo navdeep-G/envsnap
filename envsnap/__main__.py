@@ -9,11 +9,12 @@ from datetime import datetime
 from difflib import get_close_matches, unified_diff
 
 SNAPSHOT_DIR = os.path.expanduser("~/.envsnap")
-os.makedirs(SNAPSHOT_DIR, exist_ok=True)
-
 BASH_COMPLETION_SCRIPT = os.path.expanduser("~/.envsnap_completion.bash")
-
 COMMANDS_REQUIRING_SNAPSHOT = ["view", "restore"]
+
+
+def ensure_snapshot_dir():
+    os.makedirs(SNAPSHOT_DIR, exist_ok=True)
 
 
 def write_bash_completion_script():
@@ -203,6 +204,8 @@ def report_snapshot(name):
 
 
 def main():
+    ensure_snapshot_dir()
+
     if len(sys.argv) == 2 and sys.argv[1] == "--setup-completion":
         write_bash_completion_script()
         return
