@@ -67,13 +67,15 @@ def resolve_snapshot_name(name):
     return matches[0] if matches else name
 
 
-def load_snapshot(name):
-    path = snapshot_file(name)
+def get_resolved_snapshot(name):
+    resolved_name = resolve_snapshot_name(name)
+    path = snapshot_file(resolved_name)
     if not os.path.exists(path):
-        print(f"❌ Snapshot '{name}' not found.")
+        print(f"❌ Snapshot '{resolved_name}' not found.")
         sys.exit(1)
     with open(path) as f:
-        return json.load(f)
+        data = json.load(f)
+    return resolved_name, data
 
 
 def get_env_vars():
@@ -128,43 +130,31 @@ def list_snapshots():
 
 
 def restore_env_vars(name):
-    resolved_name = resolve_snapshot_name(name)
-    path = snapshot_file(resolved_name)
-    if not os.path.exists(path):
-        print("❌ Snapshot not found.")
-        return
-    with open(path) as f:
-        data = json.load(f)
+    _, data = get_resolved_snapshot(name)
     for k, v in data.get("env_vars", {}).items():
         print(f"export {k}={v}")
 
 
 def view_snapshot(name):
-    resolved_name = resolve_snapshot_name(name)
-    path = snapshot_file(resolved_name)
-    if not os.path.exists(path):
-        print("❌ Snapshot not found.")
-    else:
-        with open(path) as f:
-            data = json.load(f)
-        print(f"\n📦 Snapshot: {resolved_name}")
-        print(f"🕒 Timestamp: {data.get('timestamp')}")
-        print(f"🐍 Python: {data.get('python_version')}")
-        print(f"📁 Virtualenv: {data.get('virtualenv')}")
-        print(f"🌿 Git Branch: {data.get('git_branch')}")
-        print("🔑 Env Vars:")
-        for k, v in data.get('env_vars', {}).items():
-            print(f"   {k} = {v}")
-        print(f"📦 Packages: {len(data.get('packages', []))} installed")
-        for pkg in data.get('packages', [])[:10]:
-            print(f"   - {pkg}")
-        if len(data.get('packages', [])) > 10:
-            print("   ... (truncated)")
+    resolved_name, data = get_resolved_snapshot(name)
+    print(f"\n📦 Snapshot: {resolved_name}")
+    print(f"🕒 Timestamp: {data.get('timestamp')}")
+    print(f"🐍 Python: {data.get('python_version')}")
+    print(f"📁 Virtualenv: {data.get('virtualenv')}")
+    print(f"🌿 Git Branch: {data.get('git_branch')}")
+    print("🔑 Env Vars:")
+    for k, v in data.get('env_vars', {}).items():
+        print(f"   {k} = {v}")
+    print(f"📦 Packages: {len(data.get('packages', []))} installed")
+    for pkg in data.get('packages', [])[:10]:
+        print(f"   - {pkg}")
+    if len(data.get('packages', [])) > 10:
+        print("   ... (truncated)")
 
 
 def compare_snapshots(name1, name2):
-    snap1 = load_snapshot(resolve_snapshot_name(name1))
-    snap2 = load_snapshot(resolve_snapshot_name(name2))
+    _, snap1 = get_resolved_snapshot(name1)
+    _, snap2 = get_resolved_snapshot(name2)
 
     def flatten_snapshot(data):
         flattened = {}
@@ -196,7 +186,7 @@ def compare_snapshots(name1, name2):
 
 
 def report_snapshot(name):
-    data = load_snapshot(resolve_snapshot_name(name))
+    _, data = get_resolved_snapshot(name)
     print(f"\n📋 Summary Report for '{name}'")
     print("----------------------------")
     print(f"📅 Timestamp       : {data.get('timestamp')}")
@@ -262,4 +252,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
